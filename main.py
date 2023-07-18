@@ -1,6 +1,7 @@
 import telebot
 import name_rates
 import all_rates
+import requests
 
 from config import token
 from telebot import custom_filters
@@ -19,7 +20,7 @@ bot = telebot.TeleBot(token,
 
 # States group.
 class MyStates(StatesGroup):
-    eur = State()
+    valute = State()
 
 
 @bot.message_handler(commands=['start'])
@@ -33,13 +34,10 @@ def start_message(message):
 
 @bot.message_handler(commands=['name_rates'])
 def print_names_rates(message):
-    strings_names = []
-    for key, item in name_rates.get_name_rates().items():
-        strings_names.append("{}: {}".format(key.capitalize(), item))
-    result = "; \n".join(strings_names)
+    names = name_rates.get_name_rates()
 
     bot.send_message(message.chat.id, f"""*Допустимые валюты и их расшифровка* 
-{result}""", parse_mode="Markdown")
+{names}""", parse_mode="Markdown")
 
 @bot.message_handler(commands=['get_rates'])
 def send_rates(message):
@@ -66,30 +64,58 @@ def start_ex(message):
     """
     Start command. Here we are starting state
     """
-    bot.set_state(message.from_user.id, MyStates.eur, message.chat.id)
-    bot.send_message(message.chat.id, 'Сколько евро у вас есть?')
+    bot.set_state(message.from_user.id, MyStates.valute, message.chat.id)
+    bot.send_message(message.chat.id, 'Какая валюта интересует? Введите аббревиатуру')
 
-
-@bot.message_handler(state=MyStates.eur, is_digit=True)
+@bot.message_handler(state=MyStates.valute)
 def get_message(message):
     """
     State 1. Will process when user's state is MyStates.eur
     """
+    url = 'https://www.cbr-xml-daily.ru/daily_json.js'
+    response = requests.get(url=url).json()
+    result = message.text.upper()
+    if response.get('Valute').get(result):
+        bot.send_message(message.chat.id, result, parse_mode="html")
+    else:
+        pass
 
-    result = f"{message.text} евро, это " + '{:.2f}'.format(
-    float(all_rates.get_fixer_rates()) * int(message.text)) + " в рублях"
-    bot.send_message(message.chat.id, result, parse_mode="html")
+
+    # result = f"{message.text} евро, это " + '{:.2f}'.format(
+    # float(all_rates.get_fixer_rates()) * int(message.text)) + " в рублях"
+    # bot.send_message(message.chat.id, result, parse_mode="html")
 
     bot.delete_state(message.from_user.id, message.chat.id)
 
-
-@bot.message_handler(state=MyStates.eur, is_digit=False)
+@bot.message_handler(state=MyStates.valute, get_message=False)
 def age_incorrect(message):
     """
     Wrong response for MyStates.eur
     """
     bot.send_message(message.chat.id,
                      'Похоже, вы отправляете строку. Пожалуйста, введите цифру. Сколько евро у вас есть?')
+
+
+# @bot.message_handler(state=MyStates.valute, is_digit=True)
+# def get_message(message):
+#     """
+#     State 1. Will process when user's state is MyStates.eur
+#     """
+#
+#     result = f"{message.text} евро, это " + '{:.2f}'.format(
+#     float(all_rates.get_fixer_rates()) * int(message.text)) + " в рублях"
+#     bot.send_message(message.chat.id, result, parse_mode="html")
+#
+#     bot.delete_state(message.from_user.id, message.chat.id)
+#
+#
+# @bot.message_handler(state=MyStates.valute, is_digit=False)
+# def age_incorrect(message):
+#     """
+#     Wrong response for MyStates.eur
+#     """
+#     bot.send_message(message.chat.id,
+#                      'Похоже, вы отправляете строку. Пожалуйста, введите цифру. Сколько евро у вас есть?')
 
 
 if __name__ == '__main__':
