@@ -34,5 +34,7 @@ def get_fixer_rates():
 
 def get_other_rates():
     url = 'https://www.cbr-xml-daily.ru/daily_json.js'
+    url_price = 'https://www.cbr-xml-daily.ru/latest.js'
     response = requests.get(url=url).json()
-    print(response['Valute'])
+    response_price = requests.get(url=url_price).json()
+    return response['Valute'], response_price['rates']
