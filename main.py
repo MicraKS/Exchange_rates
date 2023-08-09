@@ -1,10 +1,8 @@
 import telebot
 import info_rates
 import all_rates
-import requests
 
 from config import token
-from all_rates import get_other_rates
 from telebot import custom_filters
 from telebot.handler_backends import State, StatesGroup
 
@@ -17,7 +15,6 @@ bot = telebot.TeleBot(token,
                       state_storage=state_storage)
 valute_names, valute_key = info_rates.get_name_rates()
 listKey = []
-
 
 
 # States group.
@@ -38,8 +35,6 @@ def start_message(message):
 
 @bot.message_handler(commands=['name_rates'])
 def print_names_rates(message):
-
-
     bot.send_message(message.chat.id, f"""*Допустимые валюты и их расшифровка* 
 {valute_names}""", parse_mode="Markdown")
 
@@ -74,22 +69,11 @@ def start_ex(message):
 
 @bot.message_handler(state=MyStates.valute, func=lambda msg: msg.text.upper() in valute_key)
 def get_message(message):
-    """
-    State 1. Will process when user's state is MyStates.eur
-    """
-    url = 'https://www.cbr-xml-daily.ru/daily_json.js'
-    response = requests.get(url=url).json()
-    result = message.text.upper()
-    if response.get('Valute').get(result):
-        append_in_listkey(msg=result)
-        bot.send_message(message.chat.id, result, parse_mode="html")
+    input_currency = message.text.upper()
+    append_in_listkey(msg=input_currency)
 
-    # result = f"{message.text} евро, это " + '{:.2f}'.format(
-    # float(all_rates.get_fixer_rates()) * int(message.text)) + " в рублях"
-    # bot.send_message(message.chat.id, result, parse_mode="html")
     bot.set_state(message.from_user.id, MyStates.converter, message.chat.id)
     bot.send_message(message.chat.id, 'Сколько рублей будем переводить')
-    # bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(state=MyStates.valute)
@@ -102,28 +86,23 @@ def age_incorrect(message):
 @bot.message_handler(state=MyStates.converter, is_digit=True)
 def get_digit(message):
     append_in_listkey(msg=message.text)
-    info_rates.get_price_rates(listKey)
-    bot.send_message(message.chat.id,message.text)
+    result = info_rates.get_price_rates(listKey)
 
-    # result = f"{message.text} евро, это " + '{:.2f}'.format(float(all_rates.get_fixer_rates()) * int(message.text)) + " в рублях"
-#
-#     result = f"{message.text} евро, это " + '{:.2f}'.format(
-#     float(all_rates.get_fixer_rates()) * int(message.text)) + " в рублях"
-#     bot.send_message(message.chat.id, result, parse_mode="html")
+    bot.send_message(message.chat.id, result)
     bot.delete_state(message.from_user.id, message.chat.id)
 
+
 #
 #
-# @bot.message_handler(state=MyStates.valute, is_digit=False)
-# def age_incorrect(message):
-#     """
-#     Wrong response for MyStates.eur
-#     """
-#     bot.send_message(message.chat.id,
-#                      'Похоже, вы отправляете строку. Пожалуйста, введите цифру. Сколько евро у вас есть?')
+@bot.message_handler(state=MyStates.converter, is_digit=False)
+def digit_incorrect(message):
+    bot.send_message(message.chat.id,
+                     'Похоже, вы отправляете строку. Пожалуйста, введите цифру.')
+
 
 def append_in_listkey(msg):
     listKey.append(msg)
+
 
 if __name__ == '__main__':
     bot.add_custom_filter(custom_filters.StateFilter(bot))

@@ -1,6 +1,8 @@
 import all_rates
 
 response_valute, response_rates = all_rates.get_other_rates()
+
+
 def get_name_rates():
     strings_names = []
     valute_key = []
@@ -11,10 +13,11 @@ def get_name_rates():
                 valute_key.append(key)
     return "; \n".join(strings_names), valute_key
 
-def get_price_rates(listKey):
+
+def get_price_rates(listkey):
     for key, value in response_rates.items():
-        if key == listKey[0]:
-            print(key)
-            print(listKey)
-            listKey.clear()
-            break
+        if key == listkey[0]:
+            result = int(listkey[1]) * value
+            print(result)
+            listkey.clear()
+            return result

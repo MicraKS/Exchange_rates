@@ -1,10 +1,12 @@
 import requests
 
+
 def get_binance_rates():
     url = 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search'
     headers = {
         'assept': '*/*',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/114.0.0.0 Safari/537.36',
     }
     params = {"fiat": "RUB",
               "page": 1,
@@ -31,6 +33,7 @@ def get_fixer_rates():
     url = 'http://data.fixer.io/api/latest?access_key=d24c65ca6d0029ae972001e5b5d075fe&symbols=RUB'
     response = requests.get(url=url).json()
     return '{:.2f}'.format(response['rates']['RUB'])
+
 
 def get_other_rates():
     url = 'https://www.cbr-xml-daily.ru/daily_json.js'
