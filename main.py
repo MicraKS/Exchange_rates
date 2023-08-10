@@ -1,8 +1,9 @@
 import telebot
+import os
 import info_rates
 import all_rates
 
-from config import token
+from dotenv import load_dotenv
 from telebot import custom_filters
 from telebot.handler_backends import State, StatesGroup
 
@@ -11,7 +12,8 @@ from telebot.storage import StateMemoryStorage
 
 state_storage = StateMemoryStorage()
 
-bot = telebot.TeleBot(token,
+load_dotenv()
+bot = telebot.TeleBot(os.getenv('token'),
                       state_storage=state_storage)
 valute_names, valute_key = info_rates.get_name_rates()
 listKey = []
