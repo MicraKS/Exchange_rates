@@ -45,9 +45,10 @@ def print_names_rates(message):
 def send_rates(message):
     binance_rate = all_rates.get_binance_rates()
     garantex_rate = all_rates.get_garantex_rates()
-    bot.send_message(message.chat.id, f"""Курсы валют
--Binance Tinkoff {binance_rate}
--Garantex {garantex_rate}""")
+    bot.send_message(message.chat.id, f"""*Курсы валют*
+Binance Tinkoff {binance_rate}; 
+Garantex {garantex_rate}; 
+{info_rates.get_value_all_rates()}""", parse_mode="Markdown")
 
 
 # Any state

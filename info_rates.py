@@ -21,3 +21,11 @@ def get_price_rates(listkey):
             print(result)
             listkey.clear()
             return result
+
+def get_value_all_rates():
+    valute, price_rates = all_rates.get_other_rates()
+    list_valute = []
+    for i, g in valute.items():
+        list_valute.append(f"{g['Name']} {round(g['Value']/g['Nominal'], 3)}")
+
+    return "; \n".join(list_valute)
